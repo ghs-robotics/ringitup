@@ -19,6 +19,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
 @TeleOp(name="Concept: VuMark Id", group ="Concept")
 public class VuMarks extends LinearOpMode {
 
@@ -34,6 +42,10 @@ public class VuMarks extends LinearOpMode {
 
 	private double targetX, targetY;
 	final double POWER_FACTOR = 0.25;
+
+	private DcMotor motorX1 = null;
+	private DcMotor motorX2 = null;
+	private DcMotor motorY = null;
 
 	@Override public void runOpMode() {
 
@@ -117,9 +129,15 @@ public class VuMarks extends LinearOpMode {
 					double heading = rot.thirdAngle;
 					telemetry.addData("rotation(rph):", "" + roll + " " + pitch + " " + heading);
 
-					motorX1.setPower(math.min(math.max((targetX - tX) * POWER_FACTOR, -1)), 1);
-					motorX2.setPower(math.min(math.max((targetX - tX) * POWER_FACTOR, -1)), 1);
-					motorY.setPower(math.min(math.max((targetY - tY) * POWER_FACTOR), -1), 1);
+					double desiredXMovement = (targetX - tX) * POWER_FACTOR; //compute power w/ P controller
+					double desiredYMovement = (targetY - tY) * POWER_FACTOR;
+
+					double xPower = Math.sin(heading) * desiredXMovement; //assuming heading 0 is towards the vumark, this should
+					double yPower = Math.cos(heading) * desiredYMovement; //compensate for the robot being at an angle.
+
+					motorX1.setPower(Math.min(Math.max(xPower, -1.0), 1.0));
+					motorX2.setPower(Math.min(Math.max(xPower, -1.0), 1.0));
+					motorY.setPower(Math.min(Math.max(yPower, -1.0), 1.0));
 				}
 			}
 			else {
